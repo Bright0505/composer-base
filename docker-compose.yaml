@@ -1,0 +1,68 @@
+version: '3.1'
+services:
+  php:
+    build: ./
+    expose:
+      - 9000
+    volumes:
+      - ./:/www/:rw
+      - ./lnmp/services/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./lnmp/services/php/php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf:rw
+    links:
+      - mysql
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - default 
+
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 3306:3306
+    volumes:
+      - db:/var/lib/mysql
+      - ./mysql-dump:/mysql-dump
+
+  nginx:
+    build: ./lnmp/services/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/www/:rw
+      - ./lnmp/services/nginx/ssl:/ssl:rw
+      - ./lnmp/services/nginx/conf.d:/etc/nginx/conf.d/:rw
+      - ./lnmp/services/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./lnmp/services/nginx/fastcgi-php.conf:/etc/nginx/fastcgi-php.conf:ro
+      - ./lnmp/services/nginx/fastcgi_params:/etc/nginx/fastcgi_params:ro
+    links:
+      - php
+    restart: always
+    networks:
+      - default
+
+  # phpmyadmin:
+  #   image: phpmyadmin
+  #   restart: always
+  #   ports:
+  #     - 8080:80
+  #   environment:
+  #     - PMA_HOST=mysql
+  #     - PMA_PORT=3306
+  #   links:
+  #     - mysql
+
+networks:
+  default:
+
+volumes:
+  web:
+  db:
