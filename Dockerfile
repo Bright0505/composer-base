@@ -48,6 +48,6 @@ RUN apk --no-cache add shadow && usermod -u 1000 www-data && groupmod -g 1000 ww
 #RUN echo "*       *       *       *       *       cd  /www/Dev && php artisan schedule:run >> /dev/null 2>&1" >> /etc/crontabs/root
 RUN if [ "$HOSTNAME" = "maintain" ]; then echo "*       *       *       *       *       cd  /www/sibase && php artisan schedule:run >> /var/log/php/maintain.log" >> /etc/crontabs/root; else echo "This is not a maintain Service"; fi
 
-COPY ./ /www
+#COPY ./ /www
 
 WORKDIR /www
